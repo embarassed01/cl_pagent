@@ -1,0 +1,40 @@
+#include <winver.h>
+#include "./c/common/version.h"
+
+#ifdef GCC_WINDRES
+VS_VERSION_INFO		VERSIONINFO
+#else
+VS_VERSION_INFO		VERSIONINFO	MOVEABLE IMPURE LOADONCALL DISCARDABLE
+#endif
+  FILEVERSION		BROTLI_VERSION_MAJOR,BROTLI_VERSION_MINOR,BROTLI_VERSION_PATCH,0
+  PRODUCTVERSION	BROTLI_VERSION_MAJOR,BROTLI_VERSION_MINOR,BROTLI_VERSION_PATCH,0
+  FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+  FILEFLAGS		1
+#else
+  FILEFLAGS		0
+#endif
+  FILEOS		VOS__WINDOWS32
+  FILETYPE		VFT_DLL
+  FILESUBTYPE		0	// not used
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904EE"
+    //language ID = U.S. English, char set = Windows, Multilingual
+    BEGIN
+      VALUE "FileDescription",	"Brotli is a generic-purpose lossless compression algorithm.\0"
+      VALUE "FileVersion",	"1.1.0" "\0"
+      VALUE "InternalName",	"brotli.dll\0"
+      VALUE "LegalCopyright",	"(c) 2009, 2010, 2013-2016 by the Brotli Authors.\0"
+      VALUE "OriginalFilename",	"brotli.dll\0"
+      VALUE "ProductName",	"brotli\0"
+      VALUE "ProductVersion",	"1.1.0" "\0"
+      VALUE "Comments",		"For more information visit https://github.com/google/brotli\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04EE
+  END
+END

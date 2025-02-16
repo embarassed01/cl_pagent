@@ -1,0 +1,15 @@
+aux_source_directory(. TEST_SRC_LIST)
+
+foreach(TEST_SRC ${TEST_SRC_LIST})
+    get_filename_component(TEST_EXE_NAME ${TEST_SRC} NAME_WE)
+    message(STATUS "add test: ${TEST_EXE_NAME}")  # add test: test_zlib
+    add_executable(${TEST_EXE_NAME} ${TEST_SRC})
+    target_compile_options(${TEST_EXE_NAME} PRIVATE ${COMPILE_OPTIONS_DEFAULT})
+    target_compile_definitions(${TEST_EXE_NAME} PRIVATE ${PA_COMPILE_DEFINITIONS})
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        target_link_libraries(${TEST_EXE_NAME} -Wl,--start-group ${PA_LINK_LIBRARIES} -Wl,--end-group)
+    else()
+        target_link_libraries(${TEST_EXE_NAME} -Wl,--start-group ${PA_LINK_LIBRARIES} -Wl,--end-group)
+        # message(STATUS "link libs: ${PA_LINK_LIBRARIES}")
+    endif()
+endforeach(TEST_SRC)

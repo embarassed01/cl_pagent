@@ -1,0 +1,40 @@
+#include <winver.h>
+#include "./include/json/version.h"
+
+#ifdef GCC_WINDRES
+VS_VERSION_INFO		VERSIONINFO
+#else
+VS_VERSION_INFO		VERSIONINFO	MOVEABLE IMPURE LOADONCALL DISCARDABLE
+#endif
+  FILEVERSION		JSONCPP_VERSION_MAJOR,JSONCPP_VERSION_MINOR,JSONCPP_VERSION_PATCH,0
+  PRODUCTVERSION	JSONCPP_VERSION_MAJOR,JSONCPP_VERSION_MINOR,JSONCPP_VERSION_PATCH,0
+  FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+  FILEFLAGS		1
+#else
+  FILEFLAGS		0
+#endif
+  FILEOS		VOS__WINDOWS32
+  FILETYPE		VFT_DLL
+  FILESUBTYPE		0	// not used
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E8"
+    //language ID = U.S. English, char set = Windows, Multilingual
+    BEGIN
+      VALUE "FileDescription",	"A C++ library for interacting with JSON\0"
+      VALUE "FileVersion",	JSONCPP_VERSION_STRING "\0"
+      VALUE "InternalName",	"jsoncpp.dll\0"
+      VALUE "LegalCopyright",	"(C) 2007-2010 by Baptiste Lepilleur and The JsonCpp Authors, and is released under the terms of the MIT License\0"
+      VALUE "OriginalFilename",	"jsoncpp.dll\0"
+      VALUE "ProductName",	"jsoncpp\0"
+      VALUE "ProductVersion",	JSONCPP_VERSION_STRING "\0"
+      VALUE "Comments",		"For more information visit https://github.com/open-source-parsers/jsoncpp\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04E8
+  END
+END
