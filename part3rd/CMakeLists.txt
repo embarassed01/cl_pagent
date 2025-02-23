@@ -444,9 +444,18 @@ endif()
 
 set(TOOLKIT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/toolkit)
 file(GLOB TOOLKIT_SRC_LIST 
+    ${TOOLKIT_ROOT}/src/*.cpp 
+    ${TOOLKIT_ROOT}/src/*.h 
+    ${TOOLKIT_ROOT}/src/*.c 
     ${TOOLKIT_ROOT}/src/*/*.cpp 
     ${TOOLKIT_ROOT}/src/*/*.h 
     ${TOOLKIT_ROOT}/src/*/*.c 
+    ${TOOLKIT_ROOT}/src/*/*/*.cpp 
+    ${TOOLKIT_ROOT}/src/*/*/*.h 
+    ${TOOLKIT_ROOT}/src/*/*/*.c 
+    ${TOOLKIT_ROOT}/src/*/*/*/*.cpp 
+    ${TOOLKIT_ROOT}/src/*/*/*/*.h 
+    ${TOOLKIT_ROOT}/src/*/*/*/*.c 
 )
 if(IOS)
     list(APPEND TOOLKIT_SRC_LIST 
@@ -464,7 +473,7 @@ if(ENABLE_WEPOLL)
                 ${TOOLKIT_ROOT}/wepoll/sys/epoll.cpp  
                 ${TOOLKIT_ROOT}/wepoll/sys/epoll.h   
         )
-        message(STATUS, "toolkit: ${TOOLKIT_SRC_LIST}")
+        message(STATUS "toolkit: ${TOOLKIT_SRC_LIST}")
         # 增加 wepoll 头文件目录
         include_directories(${TOOLKIT_ROOT}/wepoll ${TOOLKIT_ROOT}/wepoll/sys)
         # 开启epoll
@@ -488,9 +497,13 @@ target_compile_definitions(toolkit PUBLIC ${COMPILE_DEFINITIONS})
 target_compile_options(toolkit PRIVATE ${COMPILE_OPTIONS_DEFAULT})
 target_include_directories(toolkit
   PRIVATE
-    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/src>" "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll>" "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll/sys>"
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/src>" 
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll>" 
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll/sys>"
   PUBLIC
-    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}>/src" "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll>" "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll/sys>"
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}>/src" 
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll>" 
+    "$<BUILD_INTERFACE:${TOOLKIT_ROOT}/wepoll/sys>"
 )
 
 update_cached_list(PA_LINK_LIBRARIES toolkit)
