@@ -33,6 +33,7 @@ enum EPOLL_EVENTS {
     EPOLLWRBAND = (int)(1U << 9),
     EPOLLMSG = (int)(1U << 10), /* Never reported. */
     EPOLLRDHUP = (int)(1U << 13),
+    EPOLLEVENT = (int)(1U << 14),
     EPOLLONESHOT = (int)(1U << 31)
 };
 
@@ -47,6 +48,7 @@ enum EPOLL_EVENTS {
 #define EPOLLWRBAND (1U << 9)
 #define EPOLLMSG (1U << 10)
 #define EPOLLRDHUP (1U << 13)
+#define EPOLLEVENT (1U << 14)
 #define EPOLLONESHOT (1U << 31)
 
 /* Valid opcodes ("op" parameter) to issue to `epoll_ctl()` */
@@ -115,6 +117,8 @@ WEPOLL_EXPORT int epoll_ctl(HANDLE ephnd, int op, SOCKET sock, struct epoll_even
  * @return int Returns the number of triggered events returned in "events" buffer. Or -1 in case of error with the "errno" variable set to the specific error code.
  */
 WEPOLL_EXPORT int epoll_wait(HANDLE ephnd, struct epoll_event *events, int maxevents, int timeout);
+
+WEPOLL_EXPORT void epoll_post_signal(HANDLE ephnd, uint64_t event);
 
 #define array_count(a) (sizeof(a) / (sizeof((a)[0])))
 

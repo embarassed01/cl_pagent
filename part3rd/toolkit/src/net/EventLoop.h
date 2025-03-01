@@ -58,6 +58,7 @@ namespace trantor {
         void assertInLoopThread() {
             if (!isInLoopThread()) { abortNotInLoopThread(); }
         };
+        
     #ifdef __linux__
         /**
          * @brief Make the timer queue works after calling the fork() function.
@@ -147,7 +148,7 @@ namespace trantor {
         /**
          * @brief Repeatedly run a function every period of time.
          * 
-         * @param interval The duration in seconds.
+         * @param interval The duration in seconds(s).
          * @param cb The function to run
          * @return TimerId The ID of the timer.
          */
@@ -235,6 +236,9 @@ namespace trantor {
 
     private:
         void abortNotInLoopThread();
+        /**
+         * @brief 唤醒
+         */
         void wakeup();
         void wakeupRead();
         std::atomic<bool> looping_;

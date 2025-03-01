@@ -26,6 +26,7 @@ enum EPOLL_EVENTS {
     EPOLLWRBAND = (int)(1U << 9),
     EPOLLMSG = (int)(1U << 10), /* Never reported. */
     EPOLLRDHUP = (int)(1U << 13),
+    EPOLLEVENT = (int)(1U << 14),
     EPOLLONESHOT = (int)(1U << 31)
 };
 
@@ -40,6 +41,7 @@ enum EPOLL_EVENTS {
 #define EPOLLWRBAND (1U << 9)
 #define EPOLLMSG (1U << 10)
 #define EPOLLRDHUP (1U << 13)
+#define EPOLLEVENT (1U << 14)
 #define EPOLLONESHOT (1U << 31)
 
 #define EPOLL_CTL_ADD 1
@@ -1781,6 +1783,12 @@ static inline SOCKET ws__ioctl_get_bsp_socket(SOCKET socket, DWORD ioctl) {
     DWORD bytes;
     if (WSAIoctl(socket, ioctl, NULL, 0, &bsp_socket, sizeof bsp_socket, &bytes, NULL, NULL) != SOCKET_ERROR) return bsp_socket;
     else return INVALID_SOCKET;
+}
+
+void epoll_post_signal(HANDLE port_handle, uint64_t event) {
+    ULONG_PTR ev;
+    ev = (ULONG_PTR)event;
+    PostQueuedCompletionStatus(port_handle, 1, ev, NULL);
 }
 
 SOCKET ws_get_base_socket(SOCKET socket) {
