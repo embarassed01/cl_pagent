@@ -2,7 +2,7 @@
 #include <memory.h>
 #include <string.h>
 #include <stdlib.h>
-#include <zlib.h>
+#include "zlib.h"
 
 int main() {
     printf("test zlib\n");

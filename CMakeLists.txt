@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(pagent LANGUAGES CXX C)
+# set(CMAKE_C_COMPILER gcc)            # set(CMAKE_CXX_COMPILER g++)
+# set(C_STANDARD 20)                   # set(CXX_STANDARD 20)
+# set(CMAKE_C_STANDARD 20)             # set(CMAKE_CXX_STANDARD 20)
+# set(C_STANDARD_REQUIRED YES)         # set(CXX_STANDARD_REQUIRED YES)
+# set(CMAKE_C_STANDARD_REQUIRED YES)   # set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 option(ENABLE_OPENSSL "Enable OpenSSL" ON)
-option(ENABLE_WEPOLL "Enable wepoll" ON)
-option(ENABLE_MEM_DEBUG "Enable Memory Debug" OFF)
-option(USE_SOLUTION_FOLDERS "Enable solution dir supported" OFF)
+# option(ENABLE_WEPOLL "Enable wepoll" ON)
+# option(ENABLE_MEM_DEBUG "Enable Memory Debug" OFF)
+# option(USE_SOLUTION_FOLDERS "Enable solution dir supported" OFF)
 
 # 设置socket默认缓冲区为256K，如果设置为0则不设置socket的默认缓冲区大小，使用系统内核默认值（设置为0仅对Linux有效）
 set(SOCKET_DEFAULT_BUF_SIZE 262144 CACHE STRING "Default buffer size for socket" FORCE)
@@ -93,26 +98,33 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
     endif()
 endif()
 
-# pagent以及各个runtime依赖
+# pagent以及各个runtime依赖，仅截止到openssl就不要再更新了！！
 update_cached(PA_LINK_LIBRARIES "")
 update_cached(PA_COMPILE_DEFINITIONS "")
 
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    message(STATUS "Linux配置")
-endif()
+# if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+#     message(STATUS "Linux配置")
+# endif()
 
-if(ENABLE_MEM_DEBUG)
-    message(STATUS "启用内存调试标识")
-    update_cached_list(PA_LINK_LIBRARIES, "-Wl,-wrap,free;-Wl,-wrap,malloc;-Wl,-wrap,realloc;-Wl,-wrap,calloc")
-    update_cached_list(PA_COMPILE_DEFINITIONS ENABLE_MEM_DEBUG)
-endif()
+# if(ENABLE_MEM_DEBUG)
+#     message(STATUS "启用内存调试标识")
+#     update_cached_list(PA_LINK_LIBRARIES, "-Wl,-wrap,free;-Wl,-wrap,malloc;-Wl,-wrap,realloc;-Wl,-wrap,calloc")
+#     update_cached_list(PA_COMPILE_DEFINITIONS ENABLE_MEM_DEBUG)
+# endif()
 
 # static build basic{libgcc, libstdc++, winpthread/pthread} on win32+mingw
 # Note: -lwinpthread / -lpthread，只能同时存在一个； -s就是strip symbols
 if(MINGW)
     update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
-    # update_cached_list(PA_LINK_LIBRARIES "-s -static -Wl,--whole-archive -lwinpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++")
     update_cached_list(PA_LINK_LIBRARIES "-s -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++")
+endif()
+
+find_package(Threads)
+update_cached_list(PA_LINK_LIBRARIES Threads::Threads atomic)
+if(WIN32)
+    update_cached_list(PA_LINK_LIBRARIES ws2_32 rpcrt4 Iphlpapi shlwapi)
+elseif(NOT ANDROID OR IOS)  # -Wl,--start-group    -Wl,--end-group
+    update_cached_list(PA_LINK_LIBRARIES pthread)
 endif()
 
 # openssl查找是否存在
@@ -122,7 +134,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
     # Could NOT find OpenSSL, try to set the path to OpenSSL root folder in the filesystem variable OPENSSL_ROOT_DIR (missing: OPENSSL_CRYPTO_LIBRARY OPENSSL_INCLUDE_DIR)
     set(OPENSSL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/part3rd/openssl-1.1.1d-win64-mingw)
 endif()
-find_package(OpenSSL)
+find_package(OpenSSL)  # 会自动找到${OPENSSL_INCLUDE_DIR}和${OPENSSL_LIBRARIES}
 if(OPENSSL_FOUND AND ENABLE_OPENSSL)
     message(STATUS "found library: ${OPENSSL_LIBRARIES}, ENABLE_OPENSSL defined")
     include_directories(${OPENSSL_INCLUDE_DIR})
@@ -130,69 +142,54 @@ if(OPENSSL_FOUND AND ENABLE_OPENSSL)
     if(OPENSSL_USE_STATIC_LIBS AND CMAKE_SYSTEM_NAME MATCHES "Windows")
         update_cached_list(PA_LINK_LIBRARIES Crypt32)
     elseif(OPENSSL_USE_STATIC_LIBS AND CMAKE_SYSTEM_NAME MATCHES "Linux")
-        update_cached_list(PA_LINK_LIBRARIES ${CMAKE_DL_LIBS})
+        update_cached_list(PA_LINK_LIBRARIES ${CMAKE_DL_LIBS})  # -ldl
     endif()
 else()
     set(ENABLE_OPENSSL OFF)
     message(WARNING "openssl未找到")
 endif()
 
-if(WIN32)
-    update_cached_list(PA_LINK_LIBRARIES ws2_32 Iphlpapi shlwapi)
-elseif(NOT ANDROID OR IOS)  # -Wl,--start-group    -Wl,--end-group
-    update_cached_list(PA_LINK_LIBRARIES pthread)
-endif()
-
 # ------------------------------------------------------------------------
 # Solution folders:
 # ------------------------------------------------------------------------
-if(USE_SOLUTION_FOLDERS)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
-endif()
-
-if(MSVC AND ENABLE_MSVC_MT)
-    set(CompilerFlags 
-        CMAKE_CXX_FLAGS 
-        CMAKE_CXX_FLAGS_DEBUG 
-        CMAKE_CXX_FLAGS_RELEASE 
-        CMAKE_C_FLAGS 
-        CMAKE_C_FLAGS_DEBUG 
-        CMAKE_C_FLAGS_RELEASE 
-    )
-    # TODO: 通常应该不需要替换
-    foreach(CompilerFlag ${CompilerFlags})
-        string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-    endforeach()
-endif()
+# if(USE_SOLUTION_FOLDERS)
+#     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+#     set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
+# endif()
+# if(MSVC AND ENABLE_MSVC_MT)
+#     set(CompilerFlags 
+#         CMAKE_CXX_FLAGS 
+#         CMAKE_CXX_FLAGS_DEBUG 
+#         CMAKE_CXX_FLAGS_RELEASE 
+#         CMAKE_C_FLAGS 
+#         CMAKE_C_FLAGS_DEBUG 
+#         CMAKE_C_FLAGS_RELEASE 
+#     )
+#     # TODO: 通常应该不需要替换
+#     foreach(CompilerFlag ${CompilerFlags})
+#         string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+#     endforeach()
+# endif()
 # ------------------------------------------------------------------------
 # @end Solution folders
 # ------------------------------------------------------------------------
 
+message(STATUS "${PA_LINK_LIBRARIES}")  # the global var: 到此为止，不要再更新！！具体程序根据其使用的库自定义选择！
+# -fPIC;-Wall;-Wextra;-Wno-unused-function;-Wno-unused-parameter;-Wno-unused-variable;-Wno-deprecated-declarations;-Wno-error=extra;-Wno-error=missing-field-initializers;-Wno-error=type-limits;-Wno-comment;-g3;-s -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++;Threads::Threads;atomic;ws2_32;rpcrt4;Iphlpapi;shlwapi;C:/work/Development/projs/clang/windows/cl_pagent/part3rd/openssl-1.1.1d-win64-mingw/lib/libssl.a;C:/work/Development/projs/clang/windows/cl_pagent/part3rd/openssl-1.1.1d-win64-mingw/lib/libcrypto.a;Crypt32
+
 add_subdirectory(part3rd)
 add_subdirectory(tests)
 
-
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_CXX_COMPILER clang++)
-
-set(C_STANDARD 20)
-set(CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 20)
-set(CMAKE_CXX_STANDARD 20)
-set(C_STANDARD_REQUIRED YES)
-set(CXX_STANDARD_REQUIRED YES)
-set(CMAKE_C_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
-
 # collect source code
 file(GLOB PAGENT_SRC_LIST 
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.h 
-    ${CMAKE_CURRENT_SOURCE_DIR}/*c 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*c 
 )
 
 add_executable(pagent ${PAGENT_SRC_LIST})
-link_libraries(ws2_32)
+
+
 target_compile_options(pagent PRIVATE ${PA_COMPILE_DEFINITIONS})
 target_link_libraries(pagent ${PA_LINK_LIBRARIES})
+

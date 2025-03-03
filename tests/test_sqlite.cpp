@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     NotUsed = 0;

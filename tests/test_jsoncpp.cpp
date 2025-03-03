@@ -1,7 +1,7 @@
 #include "json/reader.h"
+#include "json/json.h"
 #include <stdio.h>
 #include <iostream>
-#include <json/json.h>
 
 int main() {
     printf("test jsoncpp\n");

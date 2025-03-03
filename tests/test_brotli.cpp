@@ -7,10 +7,11 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include <brotli/decode.h>
-#include <brotli/encode.h>
-#include <brotli/types.h>
-#include <constants.h>
+#include "brotli/decode.h"
+#include "brotli/encode.h"
+#include "brotli/types.h"
+#include "brotli/../../common/constants.h"
+// #include "constants.h"
 
 #if defined(_WIN32)
 #include <io.h>
