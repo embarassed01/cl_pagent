@@ -56,7 +56,7 @@ static int ms_open(const char *filename, int oflag, int pmode) {
     return result;
 }
 #else /* !defined(_WIN32) */
-#incldue <unistd.h>
+#include <unistd.h>
 #include <utime.h>
 #define MAKE_BINARY(FILENO)  (FILENO)
 #endif  /* defined(_WIN32) */

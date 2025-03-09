@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_STRIP "strip")
+
 project(pagent LANGUAGES CXX C)
 # set(CMAKE_C_COMPILER gcc)            # set(CMAKE_CXX_COMPILER g++)
 # set(C_STANDARD 20)                   # set(CXX_STANDARD 20)
@@ -15,8 +17,8 @@ option(ENABLE_OPENSSL "Enable OpenSSL" ON)
 # 设置socket默认缓冲区为256K，如果设置为0则不设置socket的默认缓冲区大小，使用系统内核默认值（设置为0仅对Linux有效）
 set(SOCKET_DEFAULT_BUF_SIZE 262144 CACHE STRING "Default buffer size for socket" FORCE)
 
-# set(CMAKE_BUILD_TYPE "Release") 
-set(CMAKE_BUILD_TYPE "Debug")  # "Release"
+set(CMAKE_BUILD_TYPE "Release") 
+# set(CMAKE_BUILD_TYPE "Debug")  # "Release"
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
@@ -48,6 +50,11 @@ function(update_cached_list name)
     message(STATUS "1.${name} update_cached: ${${name}}")
 endfunction()
 
+# CMake在各种编译模式下使用的默认选项:
+#     Release模式:​​-O3 -DNDEBUG​​
+#     Debug模式:​​-g​​
+#     MinSizeRel模式:​​-Os -DNDEBUG​​
+#     RelWithDebInfo模式:​-O2 -g -DNDEBUG
 # 设置默认编译选项
 if(UNIX)  # UNIX/Linux/Darwin
     message(STATUS "设置默认编译选项: UNIX/Linux/Darwin")
@@ -59,8 +66,12 @@ if(UNIX)  # UNIX/Linux/Darwin
     )
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g3")
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
     else()
         set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g0")
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -finline-limit=1 -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -finline-limit=1 -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
     endif()
 elseif(WIN32)
     message(STATUS "设置默认编译选项: Windows")
@@ -117,6 +128,9 @@ update_cached(PA_COMPILE_DEFINITIONS "")
 if(MINGW)
     update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
     update_cached_list(PA_LINK_LIBRARIES "-s -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++")
+else()
+    update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
+    update_cached_list(PA_LINK_LIBRARIES "-s -static-libgcc -static-libstdc++")
 endif()
 
 find_package(Threads)
@@ -193,3 +207,5 @@ add_executable(pagent ${PAGENT_SRC_LIST})
 target_compile_options(pagent PRIVATE ${PA_COMPILE_DEFINITIONS})
 target_link_libraries(pagent ${PA_LINK_LIBRARIES})
 
+# 为了更大缩减程序体积，可以用upx来压缩。这样压缩的好处是在减少体积的同时不影响程序的执行
+# upx --lzma test_TcpServer

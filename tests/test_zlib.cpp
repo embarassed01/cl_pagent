@@ -33,7 +33,7 @@ int main() {
 
     // test read from a more big file and write to one .gz file(检测是否能够默认开启压缩功能)
     FILE *hFile = NULL;
-    hFile = fopen("libzlibstatic.a", "rb");
+    hFile = fopen("libz.a", "rb");  // libzlibstatic.a ; libz.a(macm1)
     if (hFile == NULL) {
         fprintf(stderr, "fopen error\n");
         exit(1);
