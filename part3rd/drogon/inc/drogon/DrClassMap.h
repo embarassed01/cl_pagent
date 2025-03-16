@@ -44,7 +44,7 @@ public:
     /// @param className 
     /// @return 
     static std::shared_ptr<DrObjectBase> newSharedObject(
-                cosnt std::string &className);
+                const std::string &className);
 
     /// @brief Get the singleton object of the class named by className
     /// @param className The name of the class

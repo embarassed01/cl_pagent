@@ -71,4 +71,37 @@ foreach(TEST_SRC ${TEST_SRC_LIST})
                    COMMAND ${CMAKE_STRIP} "$<TARGET_FILE:${TEST_EXE_NAME}>"
                    COMMENT "Strip debug symbols done on final binary.")
     endif()
+    if("${TEST_EXE_NAME}" STREQUAL "test_revshell")
+        set(INCLUDE_DIRS
+            "${CMAKE_CURRENT_SOURCE_DIR}/../part3rd/revshell/"
+        )
+        include_directories(${INCLUDE_DIRS})
+        target_link_libraries(${TEST_EXE_NAME} revshell)
+
+        add_custom_command(TARGET ${TEST_EXE_NAME} POST_BUILD
+                   COMMAND ${CMAKE_STRIP} "$<TARGET_FILE:${TEST_EXE_NAME}>"
+                   COMMENT "Strip debug symbols done on final binary.")
+    endif()
+    if("${TEST_EXE_NAME}" STREQUAL "test_mpshell")
+        set(INCLUDE_DIRS
+            "${CMAKE_CURRENT_SOURCE_DIR}/../part3rd/mpshell/"
+        )
+        include_directories(${INCLUDE_DIRS})
+        target_link_libraries(${TEST_EXE_NAME} mpshell)
+
+        add_custom_command(TARGET ${TEST_EXE_NAME} POST_BUILD
+                   COMMAND ${CMAKE_STRIP} "$<TARGET_FILE:${TEST_EXE_NAME}>"
+                   COMMENT "Strip debug symbols done on final binary.")
+    endif()
+    if("${TEST_EXE_NAME}" STREQUAL "test_tlshell_client")
+        set(INCLUDE_DIRS
+            "${CMAKE_CURRENT_SOURCE_DIR}/../part3rd/tlshell/"
+        )
+        include_directories(${INCLUDE_DIRS})
+        target_link_libraries(${TEST_EXE_NAME} tlshell)
+
+        add_custom_command(TARGET ${TEST_EXE_NAME} POST_BUILD
+                   COMMAND ${CMAKE_STRIP} "$<TARGET_FILE:${TEST_EXE_NAME}>"
+                   COMMENT "Strip debug symbols done on final binary.")
+    endif()
 endforeach(TEST_SRC)

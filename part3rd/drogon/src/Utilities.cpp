@@ -11,6 +11,7 @@
 #include <iomanip>
 #else 
 #include <uuid.h>
+// #include <ossp/uuid.h>
 #include <unistd.h>
 #endif 
 #include "zlib.h"
@@ -150,7 +151,7 @@ std::string genRandomString(int length)
     return str;
 }
 
-std::vector<char> hexToBinaryVector(const char *ptr, size_t lenght)
+std::vector<char> hexToBinaryVector(const char *ptr, size_t length)
 {
     assert(length % 2 == 0);
     std::vector<char> ret(length / 2, '\0');
@@ -345,7 +346,8 @@ inline std::string createUuidString(const char *str, size_t len, bool lowerCase)
 
 std::string getUuid(bool lowerCase)
 {
-#if USE_OSSP_UUID
+// #if USE_OSSP_UUID
+#if defined __APPLE__
     uuid_t *uuid;
     uuid_create(&uuid);
     uuid_make(uuid, UUID_MAKE_V4);
@@ -353,7 +355,7 @@ std::string getUuid(bool lowerCase)
     size_t len{0};
     uuid_export(uuid, UUID_FMT_BIN, &str, &len);
     uuid_destroy(uuid);
-    auto ret = createUuidString(str, len, lowercase);
+    auto ret = createUuidString(str, len, lowerCase);
     free(str);
     return ret;
 #elif defined __FreeBSD__ || defined __OpenBSD__
@@ -474,7 +476,7 @@ std::vector<char> base64DecodeToVector(std::string_view encodedString)
         {
             for (i = 0; i < 4; ++i)
             {
-                charArray4[i] = Base64CharMap.getIndex(charArray4[i]);
+                charArray4[i] = base64CharMap.getIndex(charArray4[i]);
             }
 
             charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
@@ -535,7 +537,7 @@ size_t base64Decode(const char *encodedString,
                 charArray4[i] = base64CharMap.getIndex(charArray4[i]);
             }
             charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
-            charArray3[1] = (charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
+            charArray3[1] = ((charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
             charArray3[2] = ((charArray4[2] & 0x3) << 6) + charArray4[3];
 
             for (i = 0; (i < 3); ++i, ++a)
@@ -948,7 +950,7 @@ std::string gzipDecompress(const char *data, const size_t ndata)
         // Make sure we have enough room and reset the lengths.
         if (strm.total_out >= decompressed.length())
         {
-            decompressed.resize(decompressed.length * 2);
+            decompressed.resize(decompressed.length() * 2);
         }
         strm.next_out = (Bytef *)decompressed.data() + strm.total_out;
         strm.avail_out = static_cast<uInt>(decompressed.length() - strm.total_out);

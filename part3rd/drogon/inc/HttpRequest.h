@@ -13,6 +13,8 @@
 #include <optional>
 #include <string_view>
 #include "trantor/net/TcpConnection.h"
+#include "drogon/DrClassMap.h"
+#include "drogon/Session.h"
 
 namespace trantor
 {

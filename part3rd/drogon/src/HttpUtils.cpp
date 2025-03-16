@@ -1,11 +1,11 @@
-#include "HttpUtils.h"
+#include "../inc/HttpUtils.h"
 #include "drogon/utils/Utilities.h"
 #include "trantor/utils/Logger.h"
 #include <map>
 #include <unordered_map>
 #include <mutex>
 
-namespace trantor
+namespace drogon
 {
 static std::unordered_map<std::string, std::string> customMime;
 

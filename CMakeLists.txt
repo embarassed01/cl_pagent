@@ -17,8 +17,8 @@ option(ENABLE_OPENSSL "Enable OpenSSL" ON)
 # 设置socket默认缓冲区为256K，如果设置为0则不设置socket的默认缓冲区大小，使用系统内核默认值（设置为0仅对Linux有效）
 set(SOCKET_DEFAULT_BUF_SIZE 262144 CACHE STRING "Default buffer size for socket" FORCE)
 
-set(CMAKE_BUILD_TYPE "Release") 
-# set(CMAKE_BUILD_TYPE "Debug")  # "Release"
+# set(CMAKE_BUILD_TYPE "Release") 
+set(CMAKE_BUILD_TYPE "Debug")  # "Release"
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
@@ -66,12 +66,12 @@ if(UNIX)  # UNIX/Linux/Darwin
     )
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g3")
-        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
     else()
         set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g0")
-        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -finline-limit=1 -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -finline-limit=1 -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
     endif()
 elseif(WIN32)
     message(STATUS "设置默认编译选项: Windows")
@@ -90,14 +90,19 @@ elseif(WIN32)
         message(STATUS "MINGW")
         set(COMPILE_OPTIONS_DEFAULT 
             "-fPIC"
-            "-Wall;-Wextra"
+            "-Wall;-Wextra;-Wmissing-prototypes;-Wstrict-prototypes"
+            "-Wincompatible-pointer-types"
             "-Wno-unused-function;-Wno-unused-parameter;-Wno-unused-variable;-Wno-deprecated-declarations"
             "-Wno-error=extra;-Wno-error=missing-field-initializers;-Wno-error=type-limits;-Wno-comment"
         )
         if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-            set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g3")
+            set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g3") 
+            set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+            set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
         else()
-            set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g0")
+            set(COMPILE_OPTIONS_DEFAULT ${COMPILE_OPTIONS_DEFAULT} "-g0") 
+            set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter -Wshadow")
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -DNDEBUG -fvisibility=hidden -ffunction-sections -fdata-sections -fno-math-errno -fno-unroll-loops -fmerge-all-constants -fvtable-gc -fno-stack-protector -fno-rtti -fno-unwind-tables -fno-ident -W -Wall -Wextra -Wfatal-errors -Wno-unused-parameter")
         endif()
     endif()
 endif()
@@ -113,10 +118,6 @@ endif()
 update_cached(PA_LINK_LIBRARIES "")
 update_cached(PA_COMPILE_DEFINITIONS "")
 
-# if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-#     message(STATUS "Linux配置")
-# endif()
-
 # if(ENABLE_MEM_DEBUG)
 #     message(STATUS "启用内存调试标识")
 #     update_cached_list(PA_LINK_LIBRARIES, "-Wl,-wrap,free;-Wl,-wrap,malloc;-Wl,-wrap,realloc;-Wl,-wrap,calloc")
@@ -128,18 +129,49 @@ update_cached(PA_COMPILE_DEFINITIONS "")
 if(MINGW)
     update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
     update_cached_list(PA_LINK_LIBRARIES "-s -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++")
+elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")  # clang 
+    update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
+    update_cached_list(PA_LINK_LIBRARIES "-s -lpthread -static-libgcc -static-libstdc++")
 else()
     update_cached_list(PA_LINK_LIBRARIES ${COMPILE_OPTIONS_DEFAULT})
-    update_cached_list(PA_LINK_LIBRARIES "-s -static-libgcc -static-libstdc++")
+    update_cached_list(PA_LINK_LIBRARIES "-s -static -static-libgcc -static-libstdc++")  # -static -lpthread -ldl -lm -Wl,-rpath
 endif()
 
 find_package(Threads)
 update_cached_list(PA_LINK_LIBRARIES Threads::Threads atomic)
+
 if(WIN32)
     update_cached_list(PA_LINK_LIBRARIES ws2_32 rpcrt4 Iphlpapi shlwapi)
 elseif(NOT ANDROID OR IOS)  # -Wl,--start-group    -Wl,--end-group
     update_cached_list(PA_LINK_LIBRARIES pthread)
 endif()
+
+# some code from `CMake  FindOpenSSL.cmake`
+set(OPENSSL_USE_STATIC_LIBS true)
+function(_OpenSSL_target_add_dependencies target)
+  if(_OpenSSL_has_dependencies)
+    if(_OpenSSL_has_dependency_zlib)
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ZLIB::ZLIB)
+    endif()
+    if(_OpenSSL_has_dependency_threads)
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads)
+    endif()
+    if(_OpenSSL_has_dependency_dl)
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${CMAKE_DL_LIBS})
+    endif()
+    if(_OpenSSL_extra_static_deps)
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${_OpenSSL_extra_static_deps})
+    endif()
+  endif()
+  if(WIN32 AND OPENSSL_USE_STATIC_LIBS)
+    if(WINCE)
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ws2)
+    else()
+      set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ws2_32)
+    endif()
+    set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES crypt32)
+  endif()
+endfunction()
 
 # openssl查找是否存在
 set(OPENSSL_USE_STATIC_LIBS TRUE)
@@ -147,14 +179,88 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
     # find_package(OpenSSL)  # Windows下直接找会有如下找不到的提示
     # Could NOT find OpenSSL, try to set the path to OpenSSL root folder in the filesystem variable OPENSSL_ROOT_DIR (missing: OPENSSL_CRYPTO_LIBRARY OPENSSL_INCLUDE_DIR)
     set(OPENSSL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/part3rd/openssl-1.1.1d-win64-mingw)
+    set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include)
+    set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.a)
+    set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.a)
+    set(OPENSSL_LIBRARIES ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+    set(OPENSSL_FOUND true)
+
+    if(NOT TARGET OpenSSL::Crypto AND
+        (EXISTS "${OPENSSL_CRYPTO_LIBRARY}" OR
+        EXISTS "${LIB_EAY_LIBRARY_DEBUG}" OR
+        EXISTS "${LIB_EAY_LIBRARY_RELEASE}")
+    )
+        add_library(OpenSSL::Crypto UNKNOWN IMPORTED)
+        set_target_properties(OpenSSL::Crypto PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+        if(EXISTS "${OPENSSL_CRYPTO_LIBRARY}")
+            set_target_properties(OpenSSL::Crypto PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+            IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}")
+        endif()
+        if(EXISTS "${LIB_EAY_LIBRARY_RELEASE}")
+            set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
+            IMPORTED_CONFIGURATIONS RELEASE)
+            set_target_properties(OpenSSL::Crypto PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+            IMPORTED_LOCATION_RELEASE "${LIB_EAY_LIBRARY_RELEASE}")
+        endif()
+        if(EXISTS "${LIB_EAY_LIBRARY_DEBUG}")
+            set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
+            IMPORTED_CONFIGURATIONS DEBUG)
+            set_target_properties(OpenSSL::Crypto PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
+            IMPORTED_LOCATION_DEBUG "${LIB_EAY_LIBRARY_DEBUG}")
+        endif()
+        _OpenSSL_target_add_dependencies(OpenSSL::Crypto)
+    endif()
+
+    if(NOT TARGET OpenSSL::SSL AND 
+        (EXISTS "${OPENSSL_SSL_LIBRARY}" OR
+        EXISTS "${SSL_EAY_LIBRARY_DEBUG}" OR
+        EXISTS "${SSL_EAY_LIBRARY_RELEASE}")
+    )
+        add_library(OpenSSL::SSL UNKNOWN IMPORTED)
+        set_target_properties(OpenSSL::SSL PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+        if(EXISTS "${OPENSSL_SSL_LIBRARY}")
+            set_target_properties(OpenSSL::SSL PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+            IMPORTED_LOCATION "${OPENSSL_SSL_LIBRARY}")
+        endif()
+        if(EXISTS "${SSL_EAY_LIBRARY_RELEASE}")
+            set_property(TARGET OpenSSL::SSL APPEND PROPERTY
+            IMPORTED_CONFIGURATIONS RELEASE)
+            set_target_properties(OpenSSL::SSL PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+            IMPORTED_LOCATION_RELEASE "${SSL_EAY_LIBRARY_RELEASE}")
+        endif()
+        if(EXISTS "${SSL_EAY_LIBRARY_DEBUG}")
+            set_property(TARGET OpenSSL::SSL APPEND PROPERTY
+            IMPORTED_CONFIGURATIONS DEBUG)
+            set_target_properties(OpenSSL::SSL PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
+            IMPORTED_LOCATION_DEBUG "${SSL_EAY_LIBRARY_DEBUG}")
+        endif()
+        if(TARGET OpenSSL::Crypto)
+            set_target_properties(OpenSSL::SSL PROPERTIES
+            INTERFACE_LINK_LIBRARIES OpenSSL::Crypto)
+        endif()
+        _OpenSSL_target_add_dependencies(OpenSSL::SSL)
+    endif()
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(OPENSSL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/part3rd/openssl-1.1.1w-linux-gcc)
+    find_package(OpenSSL)  # 会自动找到${OPENSSL_INCLUDE_DIR}和${OPENSSL_LIBRARIES},OpenSSL::SSL,OpenSSL:Crypto
+else()  # Darwin/Unix
+    find_package(OpenSSL)  # 会自动找到${OPENSSL_INCLUDE_DIR}和${OPENSSL_LIBRARIES},OpenSSL::SSL,OpenSSL:Crypto
 endif()
-find_package(OpenSSL)  # 会自动找到${OPENSSL_INCLUDE_DIR}和${OPENSSL_LIBRARIES}
+
 if(OPENSSL_FOUND AND ENABLE_OPENSSL)
     message(STATUS "found library: ${OPENSSL_LIBRARIES}, ENABLE_OPENSSL defined")
     include_directories(${OPENSSL_INCLUDE_DIR})
     update_cached_list(PA_LINK_LIBRARIES ${OPENSSL_LIBRARIES})
     if(OPENSSL_USE_STATIC_LIBS AND CMAKE_SYSTEM_NAME MATCHES "Windows")
-        update_cached_list(PA_LINK_LIBRARIES Crypt32)
+        update_cached_list(PA_LINK_LIBRARIES Crypt32 secur32)
     elseif(OPENSSL_USE_STATIC_LIBS AND CMAKE_SYSTEM_NAME MATCHES "Linux")
         update_cached_list(PA_LINK_LIBRARIES ${CMAKE_DL_LIBS})  # -ldl
     endif()

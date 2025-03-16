@@ -62,7 +62,7 @@ template <typename T>
 class DrObject : public virtual DrObjectBase
 {
 public:
-    const std::string &className() cnost override 
+    const std::string &className() const override 
     {
         return alloc_.className();
     }
@@ -113,7 +113,7 @@ private:
             else if constexpr (isAutoCreationClass<D>::value)
             {
                 static_assert(std::is_default_constructible<D>::value,
-                             "Class is not default constructable!";
+                             "Class is not default constructable!");
             }
         }
     };

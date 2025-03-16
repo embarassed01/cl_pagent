@@ -40,7 +40,7 @@ struct CanConvertFromStringStream<
 };
 
 template <typename T>
-struct CanConstructFromString : std::is_constructible<T, std:string>
+struct CanConstructFromString : std::is_constructible<T, std::string>
 {
 };
 
@@ -209,7 +209,7 @@ DROGON_EXPORT size_t base64Decode(const char *encodedString,
                     size_t inLen,
                     unsigned char *outputBuffer);
 
-inline std::string base64Decode(std::string_vew encodedString)
+inline std::string base64Decode(std::string_view encodedString)
 {
     auto inLen = encodedString.size();
     std::string ret;
